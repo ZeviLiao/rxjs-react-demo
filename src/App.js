@@ -1,43 +1,32 @@
 import React from 'react'
 import './App.css'
 import * as rxjs from 'rxjs'
-import { map, scan } from 'rxjs/operators'
-// import { fromEvent } from 'rxjs';
+import { map, scan, flatMap } from 'rxjs/operators'
+import { Component } from 'react'
 
-// rxjs.of(1, 2, 3).subscribe(n => {
-//   console.log(n)
-// })
-
-// rxjs.fromEvent(window, 'click').subscribe(e => {
-//   console.log('click~')
-// })
-
-// rxjs
-//   .fromEvent(window, 'click')
-//   .pipe(map(e => e.target))
-//   .subscribe(value => {
-//     console.log('click: ', value)
-//   })
-
-rxjs
-  .fromEvent(window, 'click')
-  .pipe(
-    map(e => 1),
-    scan((total, now) => total + now)
-  )
-  .subscribe(value => {
-    document.querySelector('#counter').innerText = value
-  })
-
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        click count:
-        <div id="counter">hello</div>
-      </header>
-    </div>
+function sendRequest() {
+  return fetch('https://jsonplaceholder.typicode.com/posts/1').then(res =>
+    res.json()
   )
 }
 
-export default App
+export default class App extends Component {
+  componentDidMount() {
+    rxjs
+      .fromEvent(document.querySelector('input[name=send]'), 'click')
+      .pipe(flatMap(e => rxjs.from(sendRequest())))
+      .subscribe(value => {
+        console.log(value)
+      })
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <header className="App-header">
+          <input type="button" name="send" value="send" />
+        </header>
+      </div>
+    )
+  }
+}
